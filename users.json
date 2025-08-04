@@ -1,0 +1,26 @@
+[
+  {
+    "id": "mclqwgr0",
+    "username": "test",
+    "email": "test@mail.ru",
+    "coins": 69,
+    "avatar": 1,
+    "password": "123456789"
+  },
+  {
+    "id": "mcsdzkxka04vhe",
+    "email": "test@mail.com",
+    "password": "484065",
+    "username": "werty",
+    "avatar": 0,
+    "coins": 17917
+  },
+  {
+    "id": "mczp4b8aqnf7dd",
+    "email": "test2@mail.com",
+    "password": "123456789",
+    "username": "Svet",
+    "avatar": 3,
+    "coins": 20000
+  }
+]
