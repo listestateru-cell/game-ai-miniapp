@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { avatarImages, getAvatarIndex } from '../lib/avatars'
-import { isDemoEnv, isTelegramEnv } from '../lib/env'
+import { hasInitData, isDemoEnv, isTelegramEnv } from '../lib/env'
 import { gameApi } from '../lib/gameApi'
 
 interface User {
@@ -23,32 +23,58 @@ export default function AccountScreen({ user, onPlay, onUserUpdate }: AccountScr
   const [rewardsBalance, setRewardsBalance] = useState<number | null>(null)
 
   useEffect(() => {
-    setLoading(true)
-    if (isTelegramEnv()) {
-      const tg = (window as any)?.Telegram?.WebApp
-      tg.ready?.()
-      tg.expand?.()
-      fetch('/api/auth/telegram', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ initData: tg.initData })
-      }).then(res => res.json()).then(data => {
-        localStorage.setItem('sessionToken', data.token)
-        onUserUpdate(data.user)
-      }).catch(error => {
-        console.error(error)
-        // fallback to demo
-        gameApi.getProfile().then(profile => {
+    let cancelled = false
+
+    const run = async () => {
+      setLoading(true)
+
+      // Best effort: initialize Telegram WebApp if present.
+      if (isTelegramEnv()) {
+        const tg = (window as any)?.Telegram?.WebApp
+        try {
+          tg?.ready?.()
+          tg?.expand?.()
+        } catch (e) {
+          console.warn('Telegram WebApp init failed', e)
+        }
+
+        // If we have initData, try to authenticate via backend.
+        // If backend isn't deployed yet, fall back to demo profile.
+        if (hasInitData()) {
+          try {
+            const res = await fetch('/api/auth/telegram', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ initData: tg.initData })
+            })
+            const data = await res.json()
+            if (!cancelled && data?.token && data?.user) {
+              localStorage.setItem('sessionToken', data.token)
+              onUserUpdate(data.user)
+              setLoading(false)
+              return
+            }
+          } catch (error) {
+            console.error('Telegram auth failed; falling back to demo', error)
+          }
+        }
+      }
+
+      // Demo mode / fallback
+      try {
+        const profile = await gameApi.getProfile()
+        if (!cancelled) {
           onUserUpdate({ id: 'demo', username: 'DemoUser', name: profile.user.name, avatar: profile.user.avatar, entitlement: profile.entitlement, coins: profile.coins })
-        })
-      })
-    } else {
-      // demo mode
-      gameApi.getProfile().then(profile => {
-        onUserUpdate({ id: 'demo', username: 'DemoUser', name: profile.user.name, avatar: profile.user.avatar, entitlement: profile.entitlement, coins: profile.coins })
-      })
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
     }
-    setLoading(false)
+
+    run()
+    return () => {
+      cancelled = true
+    }
   }, [onUserUpdate])
 
   useEffect(() => {
@@ -136,7 +162,8 @@ export default function AccountScreen({ user, onPlay, onUserUpdate }: AccountScr
         <div style={{ border: '1px solid #ccc', padding: '10px', marginTop: '20px' }}>
           <h3>Debug Panel (Demo Mode)</h3>
           <p>Mode: DEMO</p>
-          <p>InitData: {isTelegramEnv() ? 'true' : 'false'}</p>
+          <p>Telegram WebApp present: {isTelegramEnv() ? 'true' : 'false'}</p>
+          <p>InitData present: {hasInitData() ? 'true' : 'false'}</p>
           <p>Coins: {user?.coins || 0}</p>
           <button onClick={() => {
             localStorage.removeItem('demo_profile_v1')
