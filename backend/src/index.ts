@@ -1,0 +1,23 @@
+import cors from 'cors'
+import express from 'express'
+import { authRoutes } from './routes/auth'
+import { gameRoutes } from './routes/game'
+import { paymentRoutes } from './routes/payments'
+
+const app = express()
+const PORT = process.env.PORT || 3000
+
+app.use(cors())
+app.use(express.json())
+
+app.use('/auth', authRoutes)
+app.use('/payments', paymentRoutes)
+app.use('/game', gameRoutes)
+
+app.get('/health', (_req, res) => {
+  res.json({ ok: true, timestamp: new Date().toISOString() })
+})
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})

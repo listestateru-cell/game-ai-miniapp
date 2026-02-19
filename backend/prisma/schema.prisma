@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  telegramId String  @unique
+  username  String?
+  name      String?
+  avatar    String?
+  coins     Int      @default(0)
+  entitlement String @default("FREE") // FREE, PREMIUM
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders Order[]
+  rewards Reward[]
+}
+
+model Order {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  telegramPaymentId String?
+  tier        String
+  amount      Int
+  status      String   @default("PENDING") // PENDING, COMPLETED, FAILED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Reward {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String   // e.g., "TASK_COMPLETION", "BATTLE_WIN"
+  amount    Int
+  createdAt DateTime @default(now())
+}

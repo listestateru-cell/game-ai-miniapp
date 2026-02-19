@@ -1,0 +1,67 @@
+.profile-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.profile-modal {
+  background-color: #23232b;
+  border-radius: 24px;
+  padding: 20px;
+  max-width: 300px;
+  width: 90%;
+  text-align: center;
+  color: #fff;
+}
+
+.profile-avatar {
+  margin-bottom: 20px;
+}
+
+.profile-avatar img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+}
+
+.profile-info {
+  margin-bottom: 20px;
+}
+
+.profile-name {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.profile-coins {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.profile-id {
+  font-size: 14px;
+  color: #FFD700;
+}
+
+.profile-buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+.profile-button {
+  background-color: #18181f;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 20px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}

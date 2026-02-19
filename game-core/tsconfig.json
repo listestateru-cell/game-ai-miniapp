@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "declaration": true,
+    "sourceMap": true,
+    "strict": true
+  },
+  "include": [
+    "src/index.ts",
+    "src/math/**/*.ts"
+  ],
+  "exclude": [
+    "**/*.test.ts",
+    "src/apiClient.ts",
+    "src/config.ts",
+    "src/useCoins.ts",
+    "src/russian/ozhegovDb.ts"
+  ]
+}

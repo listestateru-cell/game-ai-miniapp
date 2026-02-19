@@ -1,50 +1,60 @@
-# Welcome to your Expo app 👋
+# Telegram Mini App Game
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A production-grade Telegram Mini App with subscriptions via Telegram Stars and a safe earning system.
 
-## Get started
+## Architecture
 
-1. Install dependencies
+- **game-core**: Pure game logic (TypeScript)
+- **web-ui**: React + Vite frontend for Telegram WebApp
+- **backend**: Node.js + Express + Prisma backend
 
-   ```bash
-   npm install
-   ```
+## Setup
 
-2. Start the app
+1. Clone the repo
+2. Copy `.env.example` to `.env` and fill in your values
+3. Start the database: `docker-compose up -d`
+4. Install dependencies: `pnpm install`
+5. Run migrations: `pnpm --filter backend db:migrate`
+6. Start dev: `pnpm dev`
 
-   ```bash
-   npx expo start
-   ```
+## No global pnpm required
 
-In the output, you'll find options to open the app in a
+If you don't have pnpm installed globally, use one of these options:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
+### Option 1: Corepack (recommended)
 ```bash
-npm run reset-project
+corepack enable
+corepack prepare pnpm@9.12.0 --activate
+pnpm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Option 2: npx fallback
+Use `npx -y pnpm@9.12.0 <command>` for any pnpm command, e.g.:
+```bash
+npx -y pnpm@9.12.0 install
+npx -y pnpm@9.12.0 dev
+```
 
-## Learn more
+## Scripts
 
-To learn more about developing your project with Expo, look at the following resources:
+- `pnpm install`: Install all dependencies
+- `pnpm dev`: Start backend and web-ui concurrently
+- `pnpm build`: Build all packages
+- `pnpm typecheck`: Run TypeScript checks across all packages
+- `pnpm start`: Start backend only
+- `pnpm --filter backend db:migrate`: Run database migrations
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- `npm run dev`: Start all services in dev mode
+- `npm run build`: Build all packages
+- `npm run start`: Start production server
+- `npm run db:migrate`: Run Prisma migrations
 
-## Join the community
+## Telegram Setup
 
-Join our community of developers creating universal apps.
+1. Create a bot with @BotFather
+2. Enable payments in the bot settings
+3. Set webhook for payments: `https://your-domain.com/payments/telegram/webhook`
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Deployment
+
+Deploy web-ui to a static host, backend to a server with DB.

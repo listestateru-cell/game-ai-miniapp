@@ -1,0 +1,4 @@
+packages:
+  - "backend"
+  - "game-core"
+  - "web-ui"
