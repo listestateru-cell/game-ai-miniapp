@@ -1,4 +1,4 @@
-import storyTasks from '@game/core'
+import { storyTasks } from '@game/core'
 import React, { useState } from 'react'
 import { gameApi } from '../../lib/gameApi'
 

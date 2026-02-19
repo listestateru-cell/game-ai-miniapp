@@ -1,6 +1,8 @@
-export default function generatePairs(count: number = 5): { left: string; right: string }[] {
-  const pairs: { left: string; right: string }[] = [];
-  const used = new Set<string>();
+// NOTE: This file exists to support older imports, but must remain valid JavaScript.
+// The typed implementation lives in generatePairs.ts.
+function generatePairs(count = 5) {
+  const pairs = [];
+  const used = new Set();
   while (pairs.length < count) {
     const a = Math.floor(Math.random() * 15) + 1;
     const b = Math.floor(Math.random() * 15) + 1;
@@ -13,3 +15,6 @@ export default function generatePairs(count: number = 5): { left: string; right:
   }
   return pairs;
 }
+
+export { generatePairs }
+export default generatePairs
