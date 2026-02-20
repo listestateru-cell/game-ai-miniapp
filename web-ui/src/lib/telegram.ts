@@ -3,9 +3,18 @@ declare global {
     Telegram?: {
       WebApp: {
         initData: string
+        initDataUnsafe?: {
+          user?: {
+            id: number
+            username?: string
+            first_name?: string
+            last_name?: string
+            photo_url?: string
+          }
+        }
         ready: () => void
         expand: () => void
-        openInvoice: (url: string) => void
+        openInvoice: (url: string, cb?: (status: string) => void) => void
         close: () => void
       }
     }
@@ -28,8 +37,8 @@ export function expand(): void {
   window.Telegram?.WebApp?.expand()
 }
 
-export function openInvoice(url: string): void {
-  window.Telegram?.WebApp?.openInvoice(url)
+export function openInvoice(url: string, cb?: (status: string) => void): void {
+  window.Telegram?.WebApp?.openInvoice(url, cb)
 }
 
 export function close(): void {

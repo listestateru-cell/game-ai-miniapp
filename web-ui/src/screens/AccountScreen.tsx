@@ -20,6 +20,7 @@ interface AccountScreenProps {
 
 export default function AccountScreen({ user, onPlay, onUserUpdate }: AccountScreenProps) {
   const [loading, setLoading] = useState(true)
+  const [tgUserDebug, setTgUserDebug] = useState<string>('')
   const [rewardsBalance, setRewardsBalance] = useState<number | null>(null)
 
   useEffect(() => {
@@ -31,6 +32,13 @@ export default function AccountScreen({ user, onPlay, onUserUpdate }: AccountScr
       // Best effort: initialize Telegram WebApp if present.
       if (isTelegramEnv()) {
         const tg = (window as any)?.Telegram?.WebApp
+        const u = tg?.initDataUnsafe?.user
+        if (u) {
+          const name = [u.first_name, u.last_name].filter(Boolean).join(' ')
+          setTgUserDebug(`${name || ''}${u.username ? ' @' + u.username : ''} (id: ${u.id})`)
+        } else {
+          setTgUserDebug('')
+        }
         try {
           tg?.ready?.()
           tg?.expand?.()
@@ -158,21 +166,22 @@ export default function AccountScreen({ user, onPlay, onUserUpdate }: AccountScr
       <p>Rewards Balance: {rewardsBalance !== null ? rewardsBalance : 'Loading...'}</p>
       <button onClick={handleSubscribe}>Subscribe (Stars)</button>
       <button onClick={onPlay}>Play Game</button>
-      {isDemoEnv() && (
-        <div style={{ border: '1px solid #ccc', padding: '10px', marginTop: '20px' }}>
-          <h3>Debug Panel (Demo Mode)</h3>
-          <p>Mode: DEMO</p>
-          <p>Telegram WebApp present: {isTelegramEnv() ? 'true' : 'false'}</p>
-          <p>InitData present: {hasInitData() ? 'true' : 'false'}</p>
-          <p>Coins: {user?.coins || 0}</p>
+      <div style={{ border: '1px solid #ccc', padding: '10px', marginTop: '20px' }}>
+        <h3>Debug Panel</h3>
+        <p>Mode: {isDemoEnv() ? 'DEMO' : 'TELEGRAM'}</p>
+        <p>Telegram WebApp present: {isTelegramEnv() ? 'true' : 'false'}</p>
+        <p>InitData present: {hasInitData() ? 'true' : 'false'}</p>
+        <p>initDataUnsafe.user: {tgUserDebug || 'none'}</p>
+        <p>Coins: {user?.coins || 0}</p>
+        {isDemoEnv() && (
           <button onClick={() => {
             localStorage.removeItem('demo_profile_v1')
             localStorage.removeItem('demo_coins_v1')
             localStorage.removeItem('demo_entitlement_v1')
             window.location.reload()
           }}>Reset Demo Storage</button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
