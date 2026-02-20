@@ -20,22 +20,35 @@ interface User {
 
 interface GameScreenProps {
   onBack: () => void
+  user: User | null
 }
 
-export default function GameScreen({ onBack }: GameScreenProps) {
+export default function GameScreen({ onBack, user: userProp }: GameScreenProps) {
   const [user, setUser] = useState<User>({ name: 'DemoUser', avatar: 0, coins: 0 })
   const [category, setCategory] = useState<'math' | 'russian' | 'battles'>('math')
   const [selectedGame, setSelectedGame] = useState<string | null>(null)
   const [showProfileModal, setShowProfileModal] = useState(false)
 
   useEffect(() => {
+    // Prefer authenticated user from Account screen.
+    if (userProp) {
+      setUser({
+        id: userProp.id,
+        name: userProp.name || userProp.username,
+        avatar: userProp.avatar,
+        coins: userProp.coins ?? 0,
+      })
+      return
+    }
+
+    // Fallback: demo/local storage
     const loadUser = async () => {
       const profile = await gameApi.getProfile()
       const coins = await gameApi.getCoins()
       setUser({ ...profile, coins })
     }
-    loadUser()
-  }, [])
+    void loadUser()
+  }, [userProp])
 
   const handleSelectGame = (key: string) => {
     setSelectedGame(key)

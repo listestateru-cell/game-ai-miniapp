@@ -10,7 +10,7 @@ function App() {
   return (
     <div className="App">
       {screen === 'account' && <AccountScreen user={user} onPlay={() => setScreen('game')} onUserUpdate={setUser} />}
-      {screen === 'game' && <GameScreen onBack={() => setScreen('account')} />}
+      {screen === 'game' && <GameScreen onBack={() => setScreen('account')} user={user} />}
     </div>
   )
 }
