@@ -18,6 +18,14 @@ model User {
   avatar    String?
   coins     Int      @default(0)
   entitlement String @default("FREE") // FREE, PREMIUM
+
+  // Pet / character
+  petAvatar Int?
+  petLives  Int      @default(3)
+  petHunger Int      @default(0) // 0..100
+  petTapsToday Int   @default(0)
+  petDayKey String?  // last day key in Moscow time, e.g. "2026-02-20"
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

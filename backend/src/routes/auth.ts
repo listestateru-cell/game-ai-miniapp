@@ -54,7 +54,7 @@ router.post('/telegram', async (req, res) => {
     const entitlement = hasPaidOrder ? 'PREMIUM' : 'FREE'
 
     const token = createSessionToken(tgUser.id.toString())
-    res.json({ user: { id: user.id, username: user.username, name: user.name, entitlement, coins: user.coins }, token })
+    res.json({ user: { id: user.id, username: user.username, name: user.name, entitlement, coins: user.coins, petAvatar: user.petAvatar, petLives: user.petLives, petHunger: user.petHunger }, token })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     res.status(401).json({ error: message })
@@ -102,7 +102,10 @@ router.get('/me', async (req, res) => {
         id: user.id,
         telegramId: user.telegramId,
         username: user.username,
-        name: user.name
+        name: user.name,
+        petAvatar: user.petAvatar,
+        petLives: user.petLives,
+        petHunger: user.petHunger,
       },
       entitlement
     })

@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import crypto from 'crypto'
 import { Router } from 'express'
+import { getMoscowDayKey } from '../utils/moscowDay'
 
 const prisma = new PrismaClient()
 const router = Router()
@@ -61,6 +62,107 @@ router.post('/earn', async (req, res) => {
   })
 
   res.json({ success: true })
+})
+
+// --- Pet / character ---
+router.get('/pet', async (req, res) => {
+  const telegramId = getTelegramIdFromAuth(req)
+  if (!telegramId) return res.status(401).json({ error: 'Unauthorized' })
+
+  const user = await prisma.user.findUnique({ where: { telegramId } })
+  if (!user) return res.status(404).json({ error: 'User not found' })
+
+  // Reset day counters if needed
+  const dayKey = getMoscowDayKey()
+  if (user.petDayKey !== dayKey) {
+    const updated = await prisma.user.update({
+      where: { id: user.id },
+      data: { petDayKey: dayKey, petTapsToday: 0 }
+    })
+    return res.json({
+      ok: true,
+      pet: {
+        petAvatar: updated.petAvatar,
+        petLives: updated.petLives,
+        petHunger: updated.petHunger,
+        petTapsToday: updated.petTapsToday,
+        petDayKey: updated.petDayKey,
+      }
+    })
+  }
+
+  res.json({
+    ok: true,
+    pet: {
+      petAvatar: user.petAvatar,
+      petLives: user.petLives,
+      petHunger: user.petHunger,
+      petTapsToday: user.petTapsToday,
+      petDayKey: user.petDayKey,
+    }
+  })
+})
+
+router.post('/pet/select', async (req, res) => {
+  const telegramId = getTelegramIdFromAuth(req)
+  if (!telegramId) return res.status(401).json({ error: 'Unauthorized' })
+
+  const { petAvatar } = req.body
+  const idx = Number(petAvatar)
+  if (!Number.isFinite(idx) || idx < 0 || idx > 100) {
+    return res.status(400).json({ error: 'petAvatar must be a number' })
+  }
+
+  const user = await prisma.user.findUnique({ where: { telegramId } })
+  if (!user) return res.status(404).json({ error: 'User not found' })
+
+  const updated = await prisma.user.update({
+    where: { id: user.id },
+    data: { petAvatar: idx, petLives: user.petLives ?? 3 }
+  })
+
+  res.json({ ok: true, petAvatar: updated.petAvatar })
+})
+
+router.post('/pet/tap', async (req, res) => {
+  const telegramId = getTelegramIdFromAuth(req)
+  if (!telegramId) return res.status(401).json({ error: 'Unauthorized' })
+
+  const user = await prisma.user.findUnique({ where: { telegramId } })
+  if (!user) return res.status(404).json({ error: 'User not found' })
+
+  const dayKey = getMoscowDayKey()
+  const tapsToday = user.petDayKey === dayKey ? user.petTapsToday : 0
+
+  if ((user.petLives ?? 0) <= 0) {
+    return res.status(400).json({ error: 'pet is dead' })
+  }
+
+  if ((tapsToday ?? 0) >= 50) {
+    return res.status(400).json({ error: 'tap limit reached' })
+  }
+
+  const hunger = Math.min(100, (user.petHunger ?? 0) + 2)
+
+  const updated = await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      petDayKey: dayKey,
+      petTapsToday: (tapsToday ?? 0) + 1,
+      petHunger: hunger,
+    }
+  })
+
+  res.json({
+    ok: true,
+    pet: {
+      petAvatar: updated.petAvatar,
+      petLives: updated.petLives,
+      petHunger: updated.petHunger,
+      petTapsToday: updated.petTapsToday,
+      petDayKey: updated.petDayKey,
+    }
+  })
 })
 
 export { router as gameRoutes }
