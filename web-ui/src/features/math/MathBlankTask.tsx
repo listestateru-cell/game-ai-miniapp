@@ -137,10 +137,10 @@ export const MathBlankTask: React.FC<MathBlankTaskProps> = ({ questMode, onFinis
       </div>
 
       <div style={{ marginTop: 16, textAlign: 'left', opacity: 0.85, fontSize: 14 }}>
-        Нажми на число снизу, потом выбери куда его поставить.
+        Нажми на число снизу. Оно подсветится. Затем нажми "сюда A" или "сюда B".
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 12 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 12, paddingBottom: 32 }}>
         {pool.map((num, i) => (
           <button
             key={`${num}-${i}`}
@@ -154,6 +154,9 @@ export const MathBlankTask: React.FC<MathBlankTaskProps> = ({ questMode, onFinis
               color: '#fff',
               fontSize: 18,
               margin: 0,
+              touchAction: 'manipulation',
+              WebkitUserSelect: 'none',
+              userSelect: 'none',
             }}
           >
             {num}
