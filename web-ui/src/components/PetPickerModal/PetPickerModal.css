@@ -1,0 +1,56 @@
+.pet-picker-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.pet-picker {
+  width: 100%;
+  max-width: 520px;
+  background: #18181f;
+  color: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.pet-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.pet-card {
+  border: 1px solid #2a2a35;
+  background: #23232b;
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.pet-card img {
+  width: 84px;
+  height: 84px;
+  object-fit: contain;
+}
+
+.pet-name {
+  font-weight: 700;
+  color: #ffe066;
+}
+
+.pet-note {
+  margin-top: 12px;
+  opacity: 0.85;
+  font-size: 14px;
+}
