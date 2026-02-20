@@ -61,7 +61,10 @@ export default function AccountScreen({ user, onPlay, onUserUpdate }: AccountScr
             })
             const ct = res.headers.get('content-type') || ''
             const data = ct.includes('application/json') ? await res.json() : await res.text()
-            setAuthDebug(`auth: status=${res.status} ok=${res.ok} ct=${ct} body=${typeof data === 'string' ? data.slice(0, 200) : 'json'}`)
+            const bodyPreview = typeof data === 'string'
+              ? data.slice(0, 200)
+              : JSON.stringify(data).slice(0, 200)
+            setAuthDebug(`auth: status=${res.status} ok=${res.ok} ct=${ct} body=${bodyPreview}`)
             if (!cancelled && (data as any)?.token && (data as any)?.user) {
               localStorage.setItem('sessionToken', (data as any).token)
               onUserUpdate((data as any).user)
