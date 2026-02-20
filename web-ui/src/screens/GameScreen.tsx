@@ -9,6 +9,7 @@ import { MathStoryTask } from '../features/math/MathStoryTask'
 import { avatarImages, getAvatarIndex } from '../lib/avatars'
 import { gameApi } from '../lib/gameApi'
 import { mathGames, russianGames } from '../lib/gameCatalog'
+import './GameScreen.css'
 
 interface User {
   id?: string
