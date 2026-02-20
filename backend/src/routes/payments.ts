@@ -40,7 +40,7 @@ router.post('/invoice', async (req, res) => {
       }
     })
 
-    const response = await fetch(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/createInvoiceLink`, {
+    const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/createInvoiceLink`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -68,11 +68,15 @@ router.post('/invoice', async (req, res) => {
 router.post('/telegram/webhook', async (req, res) => {
   const update = req.body
 
+  if (!process.env.TELEGRAM_BOT_TOKEN) {
+    return res.status(500).json({ error: 'TELEGRAM_BOT_TOKEN not set' })
+  }
+
   try {
     if (update.pre_checkout_query) {
       // Answer pre_checkout_query
       const queryId = update.pre_checkout_query.id
-      const answerResp = await fetch(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/answerPreCheckoutQuery`, {
+      const answerResp = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/answerPreCheckoutQuery`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -5,7 +5,7 @@ import { validateTelegramInitData } from '../utils/telegram'
 
 const prisma = new PrismaClient()
 const router = Router()
-const SESSION_SECRET = process.env.SESSION_SECRET || process.env.BOT_TOKEN!
+const SESSION_SECRET = process.env.SESSION_SECRET || process.env.TELEGRAM_BOT_TOKEN!
 
 function createSessionToken(telegramId: string): string {
   const hmac = crypto.createHmac('sha256', SESSION_SECRET)
