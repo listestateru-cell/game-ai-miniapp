@@ -164,7 +164,7 @@ export default function AccountScreen({ user, onPlay, onUserUpdate }: AccountScr
   if (loading || !user) return <div>Loading...</div>
 
   return (
-    <div className="screen">
+    <div className="screen" style={{ background: '#000', color: '#fff' }}>
       <h1>Account</h1>
       {user.avatar !== undefined && (
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
@@ -176,7 +176,7 @@ export default function AccountScreen({ user, onPlay, onUserUpdate }: AccountScr
       <p>Rewards Balance: {rewardsBalance !== null ? rewardsBalance : 'Loading...'}</p>
       <button onClick={handleSubscribe}>Subscribe (Stars)</button>
       <button onClick={onPlay}>Play Game</button>
-      <div style={{ border: '1px solid #ccc', padding: '10px', marginTop: '20px' }}>
+      <div style={{ border: '1px solid #2a2a35', background: '#18181f', padding: '10px', marginTop: '20px', borderRadius: 12 }}>
         <h3>Debug Panel</h3>
         <p>Mode: {isDemoEnv() ? 'DEMO' : 'TELEGRAM'}</p>
         <p>Telegram WebApp present: {isTelegramEnv() ? 'true' : 'false'}</p>
