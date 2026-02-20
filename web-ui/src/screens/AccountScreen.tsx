@@ -50,7 +50,7 @@ export default function AccountScreen({ user, onPlay, onUserUpdate }: AccountScr
         // If backend isn't deployed yet, fall back to demo profile.
         if (hasInitData()) {
           try {
-            const res = await fetch('/api/auth/telegram', {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE}/api/auth/telegram`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ initData: tg.initData })
@@ -100,7 +100,7 @@ export default function AccountScreen({ user, onPlay, onUserUpdate }: AccountScr
       }
 
       try {
-        const res = await fetch('/api/rewards/balance', {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE}/api/game/rewards/balance`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (!res.ok) {
@@ -129,7 +129,7 @@ export default function AccountScreen({ user, onPlay, onUserUpdate }: AccountScr
     }
     if (!user) return
     const token = localStorage.getItem('sessionToken')
-    fetch('/api/payments/invoice', {
+    fetch(`${import.meta.env.VITE_API_BASE}/api/payments/invoice`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ export default function AccountScreen({ user, onPlay, onUserUpdate }: AccountScr
       tg.openInvoice(data.invoiceLink, (status: string) => {
         if (status === 'paid') {
           // Refresh user entitlement
-          fetch('/api/auth/me', {
+          fetch(`${import.meta.env.VITE_API_BASE}/api/auth/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
           }).then(res => res.json()).then(data => {
             onUserUpdate(data.user)
