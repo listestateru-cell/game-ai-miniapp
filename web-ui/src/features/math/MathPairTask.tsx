@@ -54,8 +54,8 @@ export const MathPairTask: React.FC<MathPairTaskProps> = ({ questMode, onFinish,
     }
   }
 
-  const leftPos = (i: number) => ({ x: 40, y: 70 + i * 80 })
-  const rightPos = (i: number) => ({ x: 290, y: 70 + i * 80 })
+  const leftPos = (i: number) => ({ xCircle: 64, xText: 100, y: 70 + i * 80 })
+  const rightPos = (i: number) => ({ xText: 260, xCircle: 300, y: 70 + i * 80 })
 
   return (
     <div style={{ background: '#000', color: '#fff', padding: '12px', minHeight: '100vh', boxSizing: 'border-box' }}>
@@ -72,16 +72,16 @@ export const MathPairTask: React.FC<MathPairTaskProps> = ({ questMode, onFinish,
             <g key={i}>
               {/* Left target */}
               <circle
-                cx={leftPos(i).x + 24}
+                cx={leftPos(i).xCircle}
                 cy={leftPos(i).y - 8}
-                r={20}
+                r={22}
                 fill="#23232b"
                 stroke="#ffe066"
                 strokeWidth={2}
                 onPointerDown={(e) => handlePointerDown(i, e)}
               />
               <text
-                x={leftPos(i).x}
+                x={leftPos(i).xText}
                 y={leftPos(i).y}
                 fill="#ffe066"
                 fontSize="20"
@@ -92,16 +92,16 @@ export const MathPairTask: React.FC<MathPairTaskProps> = ({ questMode, onFinish,
 
               {/* Right target */}
               <circle
-                cx={rightPos(i).x - 14}
+                cx={rightPos(i).xCircle}
                 cy={rightPos(i).y - 8}
-                r={20}
+                r={22}
                 fill="#23232b"
                 stroke="#fff"
                 strokeWidth={2}
                 onPointerUp={() => handlePointerUp(i)}
               />
               <text
-                x={rightPos(i).x}
+                x={rightPos(i).xText}
                 y={rightPos(i).y}
                 fill="#fff"
                 fontSize="20"
@@ -118,9 +118,9 @@ export const MathPairTask: React.FC<MathPairTaskProps> = ({ questMode, onFinish,
             return (
               <line
                 key={i}
-                x1={l.x + 44}
+                x1={l.xCircle + 22}
                 y1={l.y - 14}
-                x2={r.x - 26}
+                x2={r.xCircle - 22}
                 y2={r.y - 14}
                 stroke="#fff"
                 strokeWidth="3"
