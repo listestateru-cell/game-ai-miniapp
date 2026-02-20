@@ -21,7 +21,10 @@ export function validateTelegramInitData(initData: string): any {
     .map(([key, value]) => `${key}=${value}`)
     .join('\n')
 
-  const secretKey = crypto.createHash('sha256').update(botToken).digest()
+  // Telegram WebApp initData validation uses a secret key derived as:
+  // secret_key = HMAC_SHA256(key = "WebAppData", message = bot_token)
+  // https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
+  const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest()
   const hmac = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex')
 
   if (hmac !== hash) throw new Error('Invalid hash')
