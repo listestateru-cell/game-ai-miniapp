@@ -22,6 +22,9 @@ export default function AccountScreen({ user, onPlay, onUserUpdate }: AccountScr
   const [loading, setLoading] = useState(true)
   const [tgUserDebug, setTgUserDebug] = useState<string>('')
   const [rewardsBalance, setRewardsBalance] = useState<number | null>(null)
+  const [authDebug, setAuthDebug] = useState<string>('')
+
+  const apiBase = (import.meta as any).env?.VITE_API_BASE || 'https://game-ai-miniapp.onrender.com'
 
   useEffect(() => {
     let cancelled = false
@@ -50,20 +53,24 @@ export default function AccountScreen({ user, onPlay, onUserUpdate }: AccountScr
         // If backend isn't deployed yet, fall back to demo profile.
         if (hasInitData()) {
           try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE}/api/auth/telegram`, {
+            setAuthDebug(`auth: POST ${apiBase}/api/auth/telegram ...`)
+            const res = await fetch(`${apiBase}/api/auth/telegram`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ initData: tg.initData })
             })
-            const data = await res.json()
-            if (!cancelled && data?.token && data?.user) {
-              localStorage.setItem('sessionToken', data.token)
-              onUserUpdate(data.user)
+            const ct = res.headers.get('content-type') || ''
+            const data = ct.includes('application/json') ? await res.json() : await res.text()
+            setAuthDebug(`auth: status=${res.status} ok=${res.ok} ct=${ct} body=${typeof data === 'string' ? data.slice(0, 200) : 'json'}`)
+            if (!cancelled && (data as any)?.token && (data as any)?.user) {
+              localStorage.setItem('sessionToken', (data as any).token)
+              onUserUpdate((data as any).user)
               setLoading(false)
               return
             }
           } catch (error) {
             console.error('Telegram auth failed; falling back to demo', error)
+            setAuthDebug(`auth: FAILED ${(error as any)?.message || String(error)}`)
           }
         }
       }
@@ -100,7 +107,7 @@ export default function AccountScreen({ user, onPlay, onUserUpdate }: AccountScr
       }
 
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE}/api/game/rewards/balance`, {
+        const res = await fetch(`${apiBase}/api/game/rewards/balance`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (!res.ok) {
@@ -129,7 +136,7 @@ export default function AccountScreen({ user, onPlay, onUserUpdate }: AccountScr
     }
     if (!user) return
     const token = localStorage.getItem('sessionToken')
-    fetch(`${import.meta.env.VITE_API_BASE}/api/payments/invoice`, {
+    fetch(`${apiBase}/api/payments/invoice`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -141,7 +148,7 @@ export default function AccountScreen({ user, onPlay, onUserUpdate }: AccountScr
       tg.openInvoice(data.invoiceLink, (status: string) => {
         if (status === 'paid') {
           // Refresh user entitlement
-          fetch(`${import.meta.env.VITE_API_BASE}/api/auth/me`, {
+          fetch(`${apiBase}/api/auth/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
           }).then(res => res.json()).then(data => {
             onUserUpdate(data.user)
@@ -172,6 +179,8 @@ export default function AccountScreen({ user, onPlay, onUserUpdate }: AccountScr
         <p>Telegram WebApp present: {isTelegramEnv() ? 'true' : 'false'}</p>
         <p>InitData present: {hasInitData() ? 'true' : 'false'}</p>
         <p>initDataUnsafe.user: {tgUserDebug || 'none'}</p>
+        <p>API base: {apiBase}</p>
+        <p>Auth debug: {authDebug || 'n/a'}</p>
         <p>Coins: {user?.coins || 0}</p>
         {isDemoEnv() && (
           <button onClick={() => {
