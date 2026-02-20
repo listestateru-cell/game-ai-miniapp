@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { gameApi } from '../../lib/gameApi'
 import { MathBlankTask } from './MathBlankTask'
 import { MathChooseTask } from './MathChooseTask'
+import { MathEnterTask } from './MathEnterTask'
 import { MathPairTask } from './MathPairTask'
 import { MathStoryTask } from './MathStoryTask'
 
@@ -14,29 +15,27 @@ export const MathBrainQuest: React.FC<MathBrainQuestProps> = ({ onBack }) => {
   const steps = ['enter', 'choose', 'pair', 'blank', 'story']
 
   const handleStepFinish = () => {
-    if (step < steps.length - 1) {
-      setStep(step + 1)
-    } else {
-      handleQuestComplete()
-    }
+    if (step < steps.length - 1) setStep(step + 1)
+    else void handleQuestComplete()
   }
 
   const handleQuestComplete = async () => {
-    await gameApi.addCoins(100)
-    alert('Quest Complete! +100 🧠')
+    const reward = 15
+    await gameApi.addCoins(reward)
+    alert(`✅ Квест пройден! +${reward} 🧠`)
     onBack()
   }
 
   const renderStep = () => {
     switch (steps[step]) {
       case 'enter':
-        return <div>Enter task placeholder</div> // simple placeholder
+        return <MathEnterTask questMode onFinish={handleStepFinish} onBack={onBack} />
       case 'choose':
         return <MathChooseTask questMode onFinish={handleStepFinish} onBack={onBack} />
       case 'pair':
         return <MathPairTask questMode onFinish={handleStepFinish} onBack={onBack} />
       case 'blank':
-        return <MathBlankTask onBack={onBack} />
+        return <MathBlankTask questMode onFinish={handleStepFinish} onBack={onBack} />
       case 'story':
         return <MathStoryTask questMode onFinish={handleStepFinish} onBack={onBack} />
       default:
@@ -45,8 +44,8 @@ export const MathBrainQuest: React.FC<MathBrainQuestProps> = ({ onBack }) => {
   }
 
   return (
-    <div>
-      <h2>Brain Quest - Step {step + 1}</h2>
+    <div style={{ background: '#000', color: '#fff', padding: 12, minHeight: '100vh', boxSizing: 'border-box' }}>
+      <h2 style={{ margin: '10px 0 12px' }}>Квест — шаг {step + 1}/{steps.length}</h2>
       {renderStep()}
     </div>
   )

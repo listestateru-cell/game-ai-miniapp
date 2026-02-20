@@ -5,6 +5,7 @@ import { ProfileModal } from '../components/ProfileModal/ProfileModal'
 import { MathBlankTask } from '../features/math/MathBlankTask'
 import { MathBrainQuest } from '../features/math/MathBrainQuest'
 import { MathChooseTask } from '../features/math/MathChooseTask'
+import { MathEnterTask } from '../features/math/MathEnterTask'
 import { MathPairTask } from '../features/math/MathPairTask'
 import { MathStoryTask } from '../features/math/MathStoryTask'
 import { avatarImages, getAvatarIndex } from '../lib/avatars'
@@ -127,9 +128,10 @@ export default function GameScreen({ onBack, user: userProp }: GameScreenProps) 
       </div>
       {selectedGame ? (
         <div className="game-panel">
+          {selectedGame === 'enter' && <MathEnterTask onBack={handleBackToMenu} />}
+          {selectedGame === 'choose' && <MathChooseTask onBack={handleBackToMenu} />}
           {selectedGame === 'pair' && <MathPairTask onBack={handleBackToMenu} />}
           {selectedGame === 'blank' && <MathBlankTask onBack={handleBackToMenu} />}
-          {selectedGame === 'choose' && <MathChooseTask onBack={handleBackToMenu} />}
           {selectedGame === 'story' && <MathStoryTask onBack={handleBackToMenu} />}
           {selectedGame === 'brainquest' && <MathBrainQuest onBack={handleBackToMenu} />}
         </div>
