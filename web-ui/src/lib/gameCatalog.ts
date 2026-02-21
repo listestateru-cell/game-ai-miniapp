@@ -11,5 +11,6 @@ export const russianGames = [
   { key: 'words', label: 'Слова', icon: '🅰️' },
   { key: 'spelling', label: 'Орфография', icon: '✍️' },
   { key: 'grammar', label: 'Грамматика', icon: '📚' },
-  { key: 'reading', label: 'Чтение', icon: '📖' }
+  { key: 'reading', label: 'Чтение', icon: '📖' },
+  { key: 'abracadabra', label: 'Абракадабра', icon: '🪄' }
 ]

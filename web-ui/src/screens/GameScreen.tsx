@@ -11,6 +11,7 @@ import { MathStoryTask } from '../features/math/MathStoryTask'
 import { RussianGrammarTask } from '../features/russian/RussianGrammarTask'
 import { RussianReadingTask } from '../features/russian/RussianReadingTask'
 import { RussianSpellingTask } from '../features/russian/RussianSpellingTask'
+import { AbracadabraTask } from '../features/russian/AbracadabraTask'
 import { RussianWordsTask } from '../features/russian/RussianWordsTask'
 import { avatarImages, getAvatarIndex } from '../lib/avatars'
 import { gameApi } from '../lib/gameApi'
@@ -145,6 +146,7 @@ export default function GameScreen({ onBack, user: userProp }: GameScreenProps) 
           {selectedGame === 'spelling' && <RussianSpellingTask onBack={handleBackToMenu} />}
           {selectedGame === 'grammar' && <RussianGrammarTask onBack={handleBackToMenu} />}
           {selectedGame === 'reading' && <RussianReadingTask onBack={handleBackToMenu} />}
+          {selectedGame === 'abracadabra' && <AbracadabraTask onBack={handleBackToMenu} />}
         </div>
       ) : (
         <>
