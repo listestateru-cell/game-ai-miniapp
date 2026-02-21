@@ -58,8 +58,10 @@ function loadOzhegovWords() {
     // We'll capture up to first comma/space.
     const m = line.match(/^([A-ZА-ЯЁ][A-ZА-ЯЁ0-9\-]*)[ ,]/)
     if (!m) continue
-    const head = m[1]
-    // Filter out weird tokens like "II" or prefixes.
+    // Headwords sometimes have suffix digits like ДОБРО1, А2.
+    // Strip trailing digits for word validation.
+    const headRaw = m[1]
+    const head = headRaw.replace(/\d+$/g, '')
     if (head.length < 2) continue
     const n = normalizeRu(head)
     if (!n) continue
