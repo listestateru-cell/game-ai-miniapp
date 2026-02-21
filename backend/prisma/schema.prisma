@@ -19,6 +19,12 @@ model User {
   coins     Int      @default(0)
   entitlement String @default("FREE") // FREE, PREMIUM
 
+  // Battles
+  battleEarnings Int @default(0) // net profit from battles
+  battleSystemFeesPaid Int @default(0) // how much this user paid to system
+  battleWins Int @default(0)
+  battleLosses Int @default(0)
+
   // Pet / character
   petAvatar Int?
   petLives  Int      @default(3)
@@ -31,6 +37,7 @@ model User {
 
   orders Order[]
   rewards Reward[]
+  battleParticipants BattleParticipant[]
 }
 
 model Order {
@@ -52,4 +59,35 @@ model Reward {
   type      String   // e.g., "TASK_COMPLETION", "BATTLE_WIN"
   amount    Int
   createdAt DateTime @default(now())
+}
+
+model BattleMatch {
+  id        String   @id @default(cuid())
+  stake     Int
+  status    String   @default("WAITING") // WAITING, ACTIVE, FINISHED
+  reason    String?  // TIME, TIE, LEAVE, DISCONNECT
+  startedAt DateTime?
+  endsAt    DateTime?
+  winnerUserId String?
+  systemFee Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participants BattleParticipant[]
+}
+
+model BattleParticipant {
+  id         String   @id @default(cuid())
+  matchId    String
+  match      BattleMatch @relation(fields: [matchId], references: [id])
+  userId     String
+  user       User @relation(fields: [userId], references: [id])
+
+  score      Int      @default(0)
+  lastPingAt DateTime?
+  leftAt     DateTime?
+  isWinner   Boolean  @default(false)
+
+  createdAt  DateTime @default(now())
 }
