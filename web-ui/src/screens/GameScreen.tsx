@@ -16,6 +16,7 @@ import { RussianWordsTask } from '../features/russian/RussianWordsTask'
 import { avatarImages, getAvatarIndex } from '../lib/avatars'
 import { gameApi } from '../lib/gameApi'
 import { mathGames, russianGames } from '../lib/gameCatalog'
+import { BattlesBlitz } from '../features/battles/BattlesBlitz'
 import { petApi, PetState } from '../lib/petApi'
 import './GameScreen.css'
 
@@ -160,7 +161,7 @@ export default function GameScreen({ onBack, user: userProp }: GameScreenProps) 
                   <p>Выбери персонажа, чтобы участвовать в Battles.</p>
                 </>
               ) : (
-                <h2>Battles coming soon...</h2>
+                <BattlesBlitz onBack={handleBackToMenu} />
               )}
             </div>
           )}

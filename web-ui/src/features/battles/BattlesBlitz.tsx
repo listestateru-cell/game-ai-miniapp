@@ -1,0 +1,215 @@
+import React, { useEffect, useRef, useState } from 'react'
+
+const apiBase = (import.meta as any).env?.VITE_API_BASE || 'https://game-ai-miniapp.onrender.com'
+
+function getToken(): string | null {
+  return localStorage.getItem('sessionToken')
+}
+
+export const BattlesBlitz: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+  const [stake, setStake] = useState<number | null>(null)
+  const [matchId, setMatchId] = useState<string | null>(null)
+  const [status, setStatus] = useState<'idle' | 'waiting' | 'active' | 'finished'>('idle')
+  const [task, setTask] = useState<any>(null)
+  const [answer, setAnswer] = useState('')
+  const [secondsLeft, setSecondsLeft] = useState(60)
+  const [scoreMe, setScoreMe] = useState(0)
+  const [scoreOp, setScoreOp] = useState(0)
+  const [msg, setMsg] = useState('')
+  const timerRef = useRef<any>(null)
+
+  const join = async (s: number) => {
+    setStake(s)
+    setMsg('')
+    setStatus('waiting')
+
+    const token = getToken()
+    if (!token) {
+      setMsg('Нет токена. Открой Account и авторизуйся заново.')
+      setStatus('idle')
+      return
+    }
+
+    const res = await fetch(`${apiBase}/api/battles/queue/join`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ stake: s })
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      setMsg(data?.error || 'Ошибка')
+      setStatus('idle')
+      return
+    }
+
+    setMatchId(data.matchId)
+    setStatus(data.status === 'ACTIVE' ? 'active' : 'waiting')
+  }
+
+  const loadState = async () => {
+    if (!matchId) return
+    const token = getToken()
+    if (!token) return
+    const res = await fetch(`${apiBase}/api/battles/match/${matchId}/state`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    const data = await res.json()
+    if (!res.ok) return
+
+    const parts = data.match.participants
+    // best-effort: current user is unknown here; just take max score as opponent.
+    const scores = parts.map((p: any) => p.score).sort((a: number, b: number) => b - a)
+    setScoreMe(scores[0] ?? 0)
+    setScoreOp(scores[1] ?? 0)
+
+    if (data.match.status === 'FINISHED') {
+      setStatus('finished')
+      clearInterval(timerRef.current)
+      return
+    }
+
+    if (data.match.status === 'ACTIVE') {
+      setStatus('active')
+      if (data.match.endsAt) {
+        const end = new Date(data.match.endsAt).getTime()
+        const left = Math.max(0, Math.floor((end - Date.now()) / 1000))
+        setSecondsLeft(left)
+        if (left <= 0) {
+          setStatus('finished')
+        }
+      }
+    }
+  }
+
+  const loadTask = async () => {
+    if (!matchId) return
+    const token = getToken()
+    if (!token) return
+    const res = await fetch(`${apiBase}/api/battles/match/${matchId}/task`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    const data = await res.json()
+    if (!res.ok) return
+    setTask(data)
+  }
+
+  const submit = async () => {
+    if (!matchId || !task) return
+    const token = getToken()
+    if (!token) return
+    const res = await fetch(`${apiBase}/api/battles/match/${matchId}/answer`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ taskId: task.taskId, answer })
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      setMsg(data?.error || 'Ошибка')
+      return
+    }
+    if (data.correct) {
+      setMsg('+1')
+      setAnswer('')
+      setTask(null)
+      setTimeout(() => setMsg(''), 400)
+      await loadState()
+      await loadTask()
+    } else {
+      setMsg('❌')
+      setTimeout(() => setMsg(''), 400)
+    }
+  }
+
+  const leave = async () => {
+    if (!matchId) {
+      onBack()
+      return
+    }
+    const token = getToken()
+    if (token) {
+      await fetch(`${apiBase}/api/battles/match/${matchId}/leave`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      })
+    }
+    onBack()
+  }
+
+  useEffect(() => {
+    if (!matchId) return
+
+    const loop = async () => {
+      await loadState()
+      if (status === 'active' && !task) await loadTask()
+    }
+    void loop()
+
+    timerRef.current = setInterval(() => {
+      void loop()
+    }, 1000)
+
+    return () => clearInterval(timerRef.current)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matchId, status])
+
+  return (
+    <div style={{ background: '#000', color: '#fff', padding: 12, minHeight: '100vh', boxSizing: 'border-box' }}>
+      <button onClick={leave} style={{ margin: 0 }}>Back</button>
+      <h2 style={{ margin: '10px 0 10px' }}>Схватки — Блиц 1v1</h2>
+
+      {status === 'idle' && (
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          {[100, 500, 1000].map(s => (
+            <button key={s} onClick={() => void join(s)} style={{ margin: 0, fontWeight: 900 }}>{s} 🧠</button>
+          ))}
+        </div>
+      )}
+
+      {status === 'waiting' && (
+        <div style={{ marginTop: 12 }}>
+          Ищем соперника… ставка {stake} 🧠
+        </div>
+      )}
+
+      {status === 'active' && (
+        <>
+          <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>⏱ {secondsLeft}s</div>
+            <div style={{ color: '#ffe066', fontWeight: 900 }}>Счёт: {scoreMe}:{scoreOp}</div>
+          </div>
+
+          <div style={{ marginTop: 12, background: '#18181f', border: '1px solid #2a2a35', borderRadius: 14, padding: 14 }}>
+            {task ? (
+              <div style={{ fontSize: 28, fontWeight: 900 }}>
+                {task.a} {task.op} {task.b} = ?
+              </div>
+            ) : (
+              <div>Загрузка задания…</div>
+            )}
+          </div>
+
+          <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+            <input
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              inputMode="numeric"
+              placeholder="ответ"
+              style={{ flex: 1, padding: 12, borderRadius: 12, border: '1px solid #2a2a35', background: '#18181f', color: '#fff' }}
+            />
+            <button onClick={() => void submit()} style={{ margin: 0, fontWeight: 900 }}>OK</button>
+          </div>
+
+          {msg && <div style={{ marginTop: 8, minHeight: 20 }}>{msg}</div>}
+        </>
+      )}
+
+      {status === 'finished' && (
+        <div style={{ marginTop: 12 }}>
+          Матч завершён. Вернись назад и зайди снова.
+        </div>
+      )}
+
+      {msg && status !== 'active' && <div style={{ marginTop: 10 }}>{msg}</div>}
+    </div>
+  )
+}
