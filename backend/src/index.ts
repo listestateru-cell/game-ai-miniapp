@@ -3,6 +3,7 @@ import express from 'express'
 import { authRoutes } from './routes/auth'
 import { gameRoutes } from './routes/game'
 import { paymentRoutes } from './routes/payments'
+import { russianRoutes } from './routes/russian'
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -17,6 +18,7 @@ app.use(express.json())
 app.use('/api/auth', authRoutes)
 app.use('/api/payments', paymentRoutes)
 app.use('/api/game', gameRoutes)
+app.use('/api/russian', russianRoutes)
 
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, timestamp: new Date().toISOString() })
