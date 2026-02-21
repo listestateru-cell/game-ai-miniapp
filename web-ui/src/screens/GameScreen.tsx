@@ -8,6 +8,10 @@ import { MathChooseTask } from '../features/math/MathChooseTask'
 import { MathEnterTask } from '../features/math/MathEnterTask'
 import { MathPairTask } from '../features/math/MathPairTask'
 import { MathStoryTask } from '../features/math/MathStoryTask'
+import { RussianGrammarTask } from '../features/russian/RussianGrammarTask'
+import { RussianReadingTask } from '../features/russian/RussianReadingTask'
+import { RussianSpellingTask } from '../features/russian/RussianSpellingTask'
+import { RussianWordsTask } from '../features/russian/RussianWordsTask'
 import { avatarImages, getAvatarIndex } from '../lib/avatars'
 import { gameApi } from '../lib/gameApi'
 import { mathGames, russianGames } from '../lib/gameCatalog'
@@ -128,12 +132,19 @@ export default function GameScreen({ onBack, user: userProp }: GameScreenProps) 
       </div>
       {selectedGame ? (
         <div className="game-panel">
+          {/* Math */}
           {selectedGame === 'enter' && <MathEnterTask onBack={handleBackToMenu} />}
           {selectedGame === 'choose' && <MathChooseTask onBack={handleBackToMenu} />}
           {selectedGame === 'pair' && <MathPairTask onBack={handleBackToMenu} />}
           {selectedGame === 'blank' && <MathBlankTask onBack={handleBackToMenu} />}
           {selectedGame === 'story' && <MathStoryTask onBack={handleBackToMenu} />}
           {selectedGame === 'brainquest' && <MathBrainQuest onBack={handleBackToMenu} />}
+
+          {/* Russian */}
+          {selectedGame === 'words' && <RussianWordsTask onBack={handleBackToMenu} />}
+          {selectedGame === 'spelling' && <RussianSpellingTask onBack={handleBackToMenu} />}
+          {selectedGame === 'grammar' && <RussianGrammarTask onBack={handleBackToMenu} />}
+          {selectedGame === 'reading' && <RussianReadingTask onBack={handleBackToMenu} />}
         </div>
       ) : (
         <>
