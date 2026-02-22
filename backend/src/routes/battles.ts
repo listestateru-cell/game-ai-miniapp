@@ -6,6 +6,8 @@ const prisma = new PrismaClient()
 const router = Router()
 
 const STAKES = new Set([100, 500, 1000])
+const INSPECT_COST = 1000
+const DISCONNECT_MS = 7_000
 
 function getTelegramIdFromAuth(req: any): string | null {
   const authHeader = req.headers.authorization
@@ -24,6 +26,11 @@ function getTelegramIdFromAuth(req: any): string | null {
 
 function now() {
   return new Date()
+}
+
+function msSince(d?: Date | null) {
+  if (!d) return Number.POSITIVE_INFINITY
+  return Date.now() - d.getTime()
 }
 
 function makeTask() {
@@ -140,17 +147,27 @@ router.get('/match/:id/state', async (req, res) => {
   const me = match.participants.find(p => p.userId === user.id)
   if (!me) return res.status(404).json({ error: 'Not in match' })
 
+  // Best-effort auto-finish by time/disconnect on read
+  await maybeAutoFinish(matchId)
+
+  const refreshed = await prisma.battleMatch.findUnique({
+    where: { id: matchId },
+    include: { participants: { include: { user: true } } }
+  })
+  if (!refreshed) return res.status(404).json({ error: 'Match not found' })
+
   res.json({
     ok: true,
     match: {
-      id: match.id,
-      stake: match.stake,
-      status: match.status,
-      startedAt: match.startedAt,
-      endsAt: match.endsAt,
-      reason: match.reason,
-      systemFee: match.systemFee,
-      participants: match.participants.map(p => ({
+      id: refreshed.id,
+      stake: refreshed.stake,
+      status: refreshed.status,
+      startedAt: refreshed.startedAt,
+      endsAt: refreshed.endsAt,
+      reason: refreshed.reason,
+      winnerUserId: refreshed.winnerUserId,
+      systemFee: refreshed.systemFee,
+      participants: refreshed.participants.map(p => ({
         userId: p.userId,
         username: p.user.username,
         score: p.score,
@@ -291,6 +308,100 @@ async function finishMatch(matchId: string, reason: string) {
     })
   }
 }
+
+
+
+async function maybeAutoFinish(matchId: string) {
+  const match = await prisma.battleMatch.findUnique({
+    where: { id: matchId },
+    include: { participants: true }
+  })
+  if (!match) return
+  if (match.status !== 'ACTIVE') return
+
+  if (match.endsAt && now() > match.endsAt) {
+    await finishMatch(matchId, 'TIME')
+    return
+  }
+
+  const parts = match.participants
+  if (parts.length < 2) return
+
+  if (parts.some(p => !!p.leftAt)) {
+    await finishMatch(matchId, 'LEAVE')
+    return
+  }
+
+  const stale = parts.find(p => msSince(p.lastPingAt) > DISCONNECT_MS)
+  if (stale) {
+    await prisma.battleParticipant.updateMany({
+      where: { matchId, userId: stale.userId, leftAt: null },
+      data: { leftAt: now() }
+    })
+    await finishMatch(matchId, 'DISCONNECT')
+  }
+}
+
+router.get('/leaderboard', async (req, res) => {
+  const telegramId = getTelegramIdFromAuth(req)
+  if (!telegramId) return res.status(401).json({ error: 'Unauthorized' })
+
+  const top = await prisma.user.findMany({
+    orderBy: [{ battleEarnings: 'desc' }, { updatedAt: 'desc' }],
+    take: 10,
+    select: {
+      id: true,
+      username: true,
+      name: true,
+      petAvatar: true,
+      battleWins: true,
+      battleLosses: true,
+    }
+  })
+
+  res.json({
+    ok: true,
+    top: top.map((u, idx) => ({
+      rank: idx + 1,
+      userId: u.id,
+      username: u.username,
+      name: u.name,
+      petAvatar: u.petAvatar,
+      wins: u.battleWins,
+      losses: u.battleLosses,
+    }))
+  })
+})
+
+router.post('/inspect', async (req, res) => {
+  const telegramId = getTelegramIdFromAuth(req)
+  if (!telegramId) return res.status(401).json({ error: 'Unauthorized' })
+
+  const { targetUserId } = req.body || {}
+  if (!targetUserId) return res.status(400).json({ error: 'targetUserId required' })
+
+  const viewer = await prisma.user.findUnique({ where: { telegramId } })
+  if (!viewer) return res.status(404).json({ error: 'User not found' })
+  if (viewer.coins < INSPECT_COST) return res.status(400).json({ error: 'not enough coins' })
+
+  const target = await prisma.user.findUnique({ where: { id: targetUserId } })
+  if (!target) return res.status(404).json({ error: 'Target not found' })
+
+  await prisma.user.update({ where: { id: viewer.id }, data: { coins: { decrement: INSPECT_COST } } })
+
+  res.json({
+    ok: true,
+    cost: INSPECT_COST,
+    target: {
+      userId: target.id,
+      username: target.username,
+      name: target.name,
+      battleEarnings: target.battleEarnings,
+      wins: target.battleWins,
+      losses: target.battleLosses,
+    }
+  })
+})
 
 router.post('/match/:id/leave', async (req, res) => {
   const telegramId = getTelegramIdFromAuth(req)
